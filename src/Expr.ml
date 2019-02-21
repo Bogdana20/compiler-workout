@@ -48,7 +48,7 @@ let conv_int a = if a then 1 else 0
 
 let rec eval s e = match e with
     | Const con -> con
-    | Var variable -> state variable
+    | Var variable -> s variable
     | Binop ("!!",le, ri) -> conv_int(eval s le != 0 || eval s ri != 0)
     | Binop ("&&",le, ri) -> conv_int(eval s le != 0 && eval s ri != 0)
     | Binop ("==",le, ri) -> conv_int(eval s le == eval s ri)
