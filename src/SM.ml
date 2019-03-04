@@ -43,7 +43,7 @@ type config = int list * Syntax.Stmt.config
 	    | ST  var -> (match stack with
 		    | head::tail -> (tail, (Syntax.Expr.update var head state, input, output)))
  
-let eval _ = failwith "Not yet implemented"
+let eval config prg = List.fold_left eval_conf config prg
 
 (* Top-level evaluation
 
