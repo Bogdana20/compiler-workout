@@ -92,7 +92,7 @@ module Expr =
            )
            primary
          );
-      primary: x:IDENT { Expr.Var x } | n:DECIMAL { Expr.Const n } | -"(" expr -")"
+      primary: x:IDENT { Var x } | n:DECIMAL { Const n } | -"(" expr -")"
     )
 
   end
