@@ -41,7 +41,24 @@ module Expr =
        Takes a state and an expression, and returns the value of the expression in 
        the given state.
     *)
-    let eval _ = failwith "Not implemented yet"
+    let conv_int a = if a then 1 else 0
+
+   let rec eval s e = match e with
+       | Const con -> con
+       | Var variable -> s variable
+       | Binop ("!!",le, ri) -> conv_int(eval s le != 0 || eval s ri != 0)
+       | Binop ("&&",le, ri) -> conv_int(eval s le != 0 && eval s ri != 0)
+       | Binop ("==",le, ri) -> conv_int(eval s le == eval s ri)
+       | Binop ("!=",le, ri) -> conv_int(eval s le != eval s ri)
+       | Binop ("<=",le, ri) -> conv_int(eval s le <= eval s ri)
+       | Binop ("<", le, ri) -> conv_int(eval s le < eval s ri)
+       | Binop (">=",le, ri) -> conv_int(eval s le >= eval s ri)
+       | Binop (">", le, ri) -> conv_int(eval s le > eval s ri)
+       | Binop ("+", le, ri) -> eval s le + eval s ri
+       | Binop ("-", le, ri) -> eval s le - eval s ri
+       | Binop ("*", le, ri) -> eval s le * eval s ri
+       | Binop ("/", le, ri) -> eval s le / eval s ri
+       | Binop ("%", le, ri) -> eval s le mod eval s ri ;;
 
   end
                     
@@ -65,7 +82,14 @@ module Stmt =
 
        Takes a configuration and a statement, and returns another configuration
     *)
-    let eval _ = failwith "Not implemented yet"
+   let rec eval conf statement =
+      let (state, input, output) = conf in
+      match statement with
+        | Read var -> (match input with
+                      | head::tail -> (Expr.update var head state, tail, output))
+        | Write expr -> (state, input, output @ [Expr.eval state expr])
+        | Assign (var, expr) -> (Expr.update var (Expr.eval state expr) state, input, output)
+        | Seq (left, right) -> eval (eval conf left) right;;  
                                                          
   end
 
