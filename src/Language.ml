@@ -75,7 +75,7 @@ module Expr =
          DECIMAL --- a decimal constant [0-9]+ as a string
    
     *)
-    let do_Bin op =  ostap(- $(op)), (fun x y -> Expr.Binop (op, x, y))
+    let do_Bin op =  ostap(- $(op)), (fun x y -> Binop (op, x, y))
     
     ostap (
       expr:
