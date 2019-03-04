@@ -22,7 +22,27 @@ type config = int list * Syntax.Stmt.config
      val eval : config -> prg -> config
 
    Takes a configuration and a program, and returns a configuration as a result
- *)                         
+ *)  
+ let eval_conf config insn =
+	let (stack, state_cfg) = config in
+	let (state, input, output) = state_cfg in
+	match insn with
+	    | BINOP operator -> (match stack with
+		    | y::x::tail -> ([(Syntax.Expr.operator operator) x y] @ tail, state_cfg))
+
+           | CONST value -> ([value] @ stack, state_cfg)
+
+	    | READ -> (match input with
+		    | head::tail -> ([head] @ stack, (state, tail, output)))
+
+	    | WRITE -> (match stack with
+		    | head::tail -> (tail, (state, input, output @ [head])))
+
+	    | LD  var -> ([state var] @ stack, state_cfg)
+
+	    | ST  var -> (match stack with
+		    | head::tail -> (tail, (Syntax.Expr.update var head state, input, output)))
+ 
 let eval _ = failwith "Not yet implemented"
 
 (* Top-level evaluation
@@ -41,4 +61,13 @@ let run i p = let (_, (_, _, o)) = eval ([], (Syntax.Expr.empty, i, [])) p in o
    stack machine
  *)
 
-let compile _ = failwith "Not yet implemented"
+let rec comp_expr expression = match expression with
+       | Syntax.Expr.Const  const         -> [CONST const]
+       | Syntax.Expr.Var    var         -> [LD var]
+       | Syntax.Expr.Binop (op, left, right) -> (comp_expr left) @ (comp_expr right) @ [BINOP op]
+
+let rec compile s = match s with
+       | Syntax.Stmt.Read    var       -> [READ; ST var]
+       | Syntax.Stmt.Write   expression       -> (comp_expr expression) @ [WRITE]
+       | Syntax.Stmt.Assign (var, expression)   -> (comp_expr expression) @ [ST var]
+       | Syntax.Stmt.Seq    (left, right) -> (compile left) @ (compile right)
