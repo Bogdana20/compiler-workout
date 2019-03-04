@@ -41,24 +41,30 @@ module Expr =
        Takes a state and an expression, and returns the value of the expression in 
        the given state.
     *)
-    let conv_int a = if a then 1 else 0
+    
+   let toInt ret = if ret then 1 else 0;;
+   let toBool ret = ret != 0;;
 
-   let rec eval s e = match e with
-       | Const con -> con
-       | Var variable -> s variable
-       | Binop ("!!",le, ri) -> conv_int(eval s le != 0 || eval s ri != 0)
-       | Binop ("&&",le, ri) -> conv_int(eval s le != 0 && eval s ri != 0)
-       | Binop ("==",le, ri) -> conv_int(eval s le == eval s ri)
-       | Binop ("!=",le, ri) -> conv_int(eval s le != eval s ri)
-       | Binop ("<=",le, ri) -> conv_int(eval s le <= eval s ri)
-       | Binop ("<", le, ri) -> conv_int(eval s le < eval s ri)
-       | Binop (">=",le, ri) -> conv_int(eval s le >= eval s ri)
-       | Binop (">", le, ri) -> conv_int(eval s le > eval s ri)
-       | Binop ("+", le, ri) -> eval s le + eval s ri
-       | Binop ("-", le, ri) -> eval s le - eval s ri
-       | Binop ("*", le, ri) -> eval s le * eval s ri
-       | Binop ("/", le, ri) -> eval s le / eval s ri
-       | Binop ("%", le, ri) -> eval s le mod eval s ri ;;
+   let operator new_oper left right = match new_oper with
+     | "+"  -> left + right
+     | "-"  -> left - right
+     | "*"  -> left * right
+     | "/"  -> left / right
+     | "%"  -> left mod right
+     | ">"  -> toInt (left > right)
+     | "<"  -> toInt (left < right)
+     | ">=" -> toInt (left >= right)
+     | "<=" -> toInt (left <= right)
+     | "==" -> toInt (left = right)
+     | "!=" -> toInt (left != right)
+     | "!!" -> toInt (toBool left || toBool right)
+     | "&&" -> toInt (toBool left && toBool right);;
+     
+
+   let rec eval state express = match express with
+     | Const c -> c
+     | Var v -> state v
+     | Binop (new_oper, left, right) -> operator new_oper (eval state left) (eval state right);;
 
   end
                     
