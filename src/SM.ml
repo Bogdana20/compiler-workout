@@ -19,25 +19,30 @@ type prg = insn list
 type config = int list * Stmt.config
 
 (* Stack machine interpreter
-
      val eval : config -> prg -> config
-
    Takes a configuration and a program, and returns a configuration as a result
-*)                         
-let rec eval conf prog = failwith "Not yet implemented"
+ *)                         
+let rec eval ((stack, ((st, i, o) as c)) as conf) = function
+| [] -> conf
+| insn :: prg' ->
+   eval 
+     (match insn with
+      | BINOP op -> let y::x::stack' = stack in (Expr.to_func op x y :: stack', c)
+      | READ     -> let z::i'        = i     in (z::stack, (st, i', o))
+      | WRITE    -> let z::stack'    = stack in (stack', (st, i, o @ [z]))
+      | CONST i  -> (i::stack, c)
+      | LD x     -> (st x :: stack, c)
+      | ST x     -> let z::stack'    = stack in (stack', (Expr.update x z st, i, o))
+     ) prg'
 
 (* Top-level evaluation
-
      val run : prg -> int list -> int list
-
    Takes a program, an input stream, and returns an output stream this program calculates
 *)
 let run p i = let (_, (_, _, o)) = eval ([], (Expr.empty, i, [])) p in o
 
 (* Stack machine compiler
-
      val compile : Language.Stmt.t -> prg
-
    Takes a program in the source language and returns an equivalent program for the
    stack machine
 *)
