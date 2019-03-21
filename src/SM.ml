@@ -93,6 +93,14 @@ let run p i =
    Takes a program in the source language and returns an equivalent program for the
    stack machine
 *)
+let label_generator =
+  object
+    val mutable counter = 0
+    method generate =
+      counter <- counter + 1;
+      "l_" ^ string_of_int counter
+  end
+
 let rec compile_expr expr =
   match expr with
   | Expr.Var x -> [LD x]
